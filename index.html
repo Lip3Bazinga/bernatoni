@@ -10,292 +10,21 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-
-    <style>
-      :root {
-        --primary-color: #007bff;
-        --secondary-color: #6c757d;
-        --background-color: #f8f9fa;
-        --surface-color: #ffffff;
-        --text-color: #343a40;
-        --border-color: #dee2e6;
-        --font-family: "Inter", sans-serif;
-      }
-
-      body {
-        font-family: var(--font-family);
-        background-color: var(--background-color);
-        color: var(--text-color);
-        margin: 0;
-        padding: 40px 20px;
-      }
-
-      .app-container {
-        max-width: 600px;
-        margin: 0 auto 40px auto;
-        background-color: var(--surface-color);
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        padding: 30px;
-        text-align: center;
-      }
-
-      .app-header h2 {
-        margin: 0 0 8px 0;
-        font-size: 24px;
-      }
-      .app-header p {
-        margin: 0;
-        color: var(--secondary-color);
-        font-size: 16px;
-      }
-
-      .toggle-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 12px;
-        margin-top: 20px;
-      }
-      .toggle-label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--secondary-color);
-      }
-      .switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 28px;
-      }
-      .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: 0.4s;
-      }
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: 0.4s;
-      }
-      input:checked + .slider {
-        background-color: var(--primary-color);
-      }
-      input:focus + .slider {
-        box-shadow: 0 0 1px var(--primary-color);
-      }
-      input:checked + .slider:before {
-        transform: translateX(22px);
-      }
-      .slider.round {
-        border-radius: 34px;
-      }
-      .slider.round:before {
-        border-radius: 50%;
-      }
-
-      .uploader-area {
-        margin-top: 25px;
-        border: 2px dashed var(--border-color);
-        border-radius: 8px;
-        padding: 30px;
-        cursor: pointer;
-        transition: background-color 0.2s ease, border-color 0.2s ease;
-      }
-      .uploader-area:hover,
-      .uploader-area.dragover {
-        background-color: #f1f6ff;
-        border-color: var(--primary-color);
-      }
-      .uploader-content .icon {
-        width: 32px;
-        height: 32px;
-        color: var(--primary-color);
-        margin-bottom: 12px;
-      }
-      .uploader-content p {
-        margin: 0;
-      }
-      .file-format {
-        font-size: 12px;
-        color: var(--secondary-color);
-        margin-top: 4px;
-        display: inline-block;
-      }
-
-      .status-area {
-        margin-top: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        min-height: 24px;
-      }
-      #status-text {
-        color: var(--secondary-color);
-      }
-      .action-buttons {
-        margin-top: 15px;
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-      }
-      .btn {
-        border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-      .btn-primary {
-        background-color: var(--primary-color);
-        color: white;
-      }
-      .btn-primary:not(:disabled):hover {
-        background-color: #0056b3;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
-      }
-      .btn-secondary {
-        background-color: var(--surface-color);
-        color: var(--text-color);
-        border: 1px solid var(--border-color);
-      }
-      .btn-secondary:not([hidden]):hover {
-        background-color: #f1f1f1;
-        border-color: #c8c8c8;
-      }
-      .icon-btn {
-        width: 18px;
-        height: 18px;
-      }
-
-      .spinner {
-        width: 20px;
-        height: 20px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid var(--primary-color);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      .output-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 20px;
-        padding: 0 20px;
-        max-width: 1400px;
-        margin: 0 auto;
-      }
-
-      #template-etiqueta {
-        position: absolute;
-        left: -9999px;
-        visibility: hidden;
-      }
-      .etiqueta-wrapper {
-        background: var(--surface-color);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 15px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-        display: flex;
-        flex-direction: column;
-        width: 320px;
-        min-height: 180px;
-        box-sizing: border-box;
-        font-family: var(--font-family);
-      }
-      .etiqueta-header {
-        font-size: 26px;
-        font-weight: 700;
-        margin-bottom: 12px;
-      }
-      .etiqueta-body {
-        display: flex;
-        flex-grow: 1;
-        justify-content: space-between;
-        gap: 15px;
-      }
-      .etiqueta-info {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-      }
-      .etiqueta-info p {
-        margin: 0;
-        font-size: 14px;
-        color: #555;
-        line-height: 1.4;
-      }
-      .barcode-svg {
-        margin-top: 10px;
-        width: 100%;
-        height: 40px;
-      }
-      .etiqueta-size {
-        width: 80px;
-        height: 80px;
-        flex-shrink: 0;
-        border: 3px solid var(--text-color);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        align-self: flex-end;
-      }
-      .tamanho-value {
-        font-size: 48px;
-        font-weight: 700;
-        line-height: 1;
-      }
-      .brand-name {
-        font-size: 10px;
-        font-weight: 700;
-        margin-top: 2px;
-        letter-spacing: 0.5px;
-      }
-    </style>
+    <link href="./styles.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   </head>
   <body>
+    <header class="header-logo">
+      <a href="#" class="logo">
+        <img src="./assets/logo.webp" />
+      </a>
+    </header>
+
     <div class="app-container">
       <header class="app-header">
         <h2>Gerador de Etiquetas</h2>
-        <p>Importe um arquivo CSV para criar as etiquetas de produto.</p>
+        <p>Importe uma planilha XLSX para criar as etiquetas de produto.</p>
       </header>
-
       <div class="toggle-container">
         <span class="toggle-label">Violanta</span>
         <label class="switch">
@@ -304,10 +33,9 @@
         </label>
         <span class="toggle-label">Bernatoni</span>
       </div>
-
       <main>
         <div id="uploader" class="uploader-area">
-          <input type="file" id="csv-file" accept=".csv" hidden />
+          <input type="file" id="csv-file" accept=".xlsx" hidden />
           <div class="uploader-content">
             <svg
               class="icon"
@@ -327,15 +55,13 @@
               <strong>Clique para selecionar</strong> ou arraste e solte o
               arquivo aqui
             </p>
-            <span class="file-format">Apenas arquivos .CSV</span>
+            <span class="file-format">Apenas arquivos .XLSX</span>
           </div>
         </div>
-
         <div id="status-area" class="status-area">
           <div id="spinner" class="spinner" hidden></div>
           <span id="status-text">Nenhum arquivo selecionado.</span>
         </div>
-
         <div class="action-buttons">
           <button id="gerar-etiquetas" class="btn btn-primary" disabled>
             Gerar Etiquetas
@@ -360,9 +86,7 @@
         </div>
       </main>
     </div>
-
     <div id="output-area" class="output-grid"></div>
-
     <div id="template-etiqueta" class="etiqueta-wrapper">
       <div class="etiqueta-header">
         <span class="numeracao-nome"></span>
@@ -381,11 +105,23 @@
       </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <footer class="footer">
+      <h2>© 2025 Bernatoni. Todos os direitos reservados.</h2>
+      <h2>
+        Desenvolvido por
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://wa.me/5511976571580"
+        >
+          Filipe P. M.</a
+        >
+      </h2>
+    </footer>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const uploader = document.getElementById("uploader");
@@ -402,11 +138,15 @@
         let selectedFile = null;
 
         uploader.addEventListener("click", () => csvFileInput.click());
+
+        csvFileInput.setAttribute("accept", ".xlsx");
+
         csvFileInput.addEventListener("change", () => {
           if (csvFileInput.files.length > 0) {
-            handleFile(csvFileInput.files[0]);
+            handleXlsxFile(csvFileInput.files[0]);
           }
         });
+
         ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName =>
           uploader.addEventListener(eventName, preventDefaults, false)
         );
@@ -422,46 +162,44 @@
         );
         uploader.addEventListener("drop", e => {
           uploader.classList.remove("dragover");
-          handleFile(e.dataTransfer.files[0]);
+          handleXlsxFile(e.dataTransfer.files[0]);
         });
-        function handleFile(file) {
-          if (file && file.name.toLowerCase().endsWith(".csv")) {
-            selectedFile = file;
-            statusText.textContent = `Arquivo selecionado: ${file.name}`;
-            gerarBtn.disabled = false;
-            exportarBtn.hidden = true;
-            outputArea.innerHTML = "";
+
+        function handleXlsxFile(file) {
+          if (file && file.name.toLowerCase().endsWith(".xlsx")) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: "array" });
+              const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+              produtosData = XLSX.utils.sheet_to_json(worksheet, {
+                defval: "",
+              });
+              statusText.textContent = `Arquivo selecionado: ${file.name}`;
+              gerarBtn.disabled = false;
+              exportarBtn.hidden = true;
+              outputArea.innerHTML = "";
+              selectedFile = file;
+            };
+            reader.readAsArrayBuffer(file);
           } else {
             statusText.textContent =
-              "Formato inválido. Por favor, selecione um arquivo .CSV";
+              "Formato inválido. Por favor, selecione um arquivo .XLSX";
             selectedFile = null;
             gerarBtn.disabled = true;
           }
         }
 
         gerarBtn.addEventListener("click", () => {
-          if (!selectedFile) return;
+          if (!produtosData.length) return;
           gerarBtn.disabled = true;
           spinner.hidden = false;
           statusText.textContent = "Processando arquivo...";
-          Papa.parse(selectedFile, {
-            header: true,
-            skipEmptyLines: true,
-            complete: results => {
-              produtosData = results.data;
-              renderizarEtiquetas();
-              spinner.hidden = true;
-              statusText.textContent = `${produtosData.length} etiquetas geradas com sucesso!`;
-              exportarBtn.hidden = false;
-              gerarBtn.disabled = false;
-            },
-            error: err => {
-              console.error("Erro ao parsear CSV:", err);
-              statusText.textContent = "Erro ao ler o arquivo CSV.";
-              spinner.hidden = true;
-              gerarBtn.disabled = false;
-            },
-          });
+          renderizarEtiquetas();
+          spinner.hidden = true;
+          statusText.textContent = `${produtosData.length} etiquetas geradas com sucesso!`;
+          exportarBtn.hidden = false;
+          gerarBtn.disabled = false;
         });
 
         exportarBtn.addEventListener("click", async () => {
@@ -484,9 +222,7 @@
             format: "a4",
           });
 
-          // NOVO: Adiciona um pequeno atraso antes de começar a renderizar a primeira etiqueta
-          // Isso ajuda o navegador a garantir que o layout esteja totalmente "assentado"
-          await new Promise(resolve => setTimeout(resolve, 100)); // Atraso de 100ms
+          await new Promise(resolve => setTimeout(resolve, 100));
 
           for (let i = 0; i < etiquetasVisiveis.length; i++) {
             const etiquetaElement = etiquetasVisiveis[i];
@@ -497,8 +233,6 @@
 
             const canvas = await html2canvas(etiquetaElement, {
               scale: 3,
-              // NOVO: Adiciona a opção `allowTaint` e `useCORS` caso haja imagens carregadas de outras origens
-              // Embora neste caso não tenhamos, é uma boa prática para evitar problemas de CORS em html2canvas
               allowTaint: true,
               useCORS: true,
             });
@@ -515,7 +249,6 @@
 
             doc.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
           }
-
           doc.save("etiquetas_produtos_individual.pdf");
 
           spinner.hidden = true;
@@ -535,9 +268,9 @@
           const brandName = isMasculino ? "BERNATONI" : "VIOLANTA";
           for (const produto of produtosData) {
             if (
-              !produto["Numeracao_Nome"] ||
-              !produto["Tamanho"] ||
-              !produto["SKU"]
+              !produto["Código do produto"] ||
+              !produto["Opção de estoque"] ||
+              !produto["Número do pedido"]
             )
               continue;
             const novaEtiqueta = templateEtiqueta.cloneNode(true);
@@ -545,17 +278,17 @@
             novaEtiqueta.style.position = "static";
             novaEtiqueta.style.visibility = "visible";
             novaEtiqueta.querySelector(".numeracao-nome").textContent =
-              produto["Numeracao_Nome"];
+              produto["Código do produto"];
             novaEtiqueta.querySelector(".modelo-value").textContent =
-              produto["Modelo"] || "N/A";
+              produto["Opção de estoque"];
             novaEtiqueta.querySelector(".tamanho-value").textContent =
-              produto["Tamanho"];
+              produto["Opção de estoque"];
             novaEtiqueta.querySelector(".brand-name").textContent = brandName;
             outputArea.appendChild(novaEtiqueta);
             try {
               JsBarcode(
                 novaEtiqueta.querySelector(".barcode-svg"),
-                produto["SKU"],
+                String(produto["Número do pedido"]),
                 {
                   format: "CODE128",
                   displayValue: false,
