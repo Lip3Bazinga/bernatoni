@@ -78,9 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   exportarBtn.addEventListener("click", async () => {
-    const etiquetasVisiveis = document.querySelectorAll(
-      "#output-area .etiqueta-wrapper"
-    );
+
+    const etiquetasVisiveis = document.querySelectorAll("#output-area .etiqueta-wrapper");
+
     if (etiquetasVisiveis.length === 0) {
       alert("Nenhuma etiqueta para exportar.");
       return;
@@ -88,24 +88,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     exportarBtn.disabled = true;
     spinner.hidden = false;
-    statusText.textContent = "Gerando PDF (1 por página)...";
+    statusText.textContent = "Gerando PDF (1 por página tamanho da etiqueta)...";
 
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-    });
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    let doc = null;
 
     for (let i = 0; i < etiquetasVisiveis.length; i++) {
       const etiquetaElement = etiquetasVisiveis[i];
 
-      if (i > 0) {
-        doc.addPage();
-      }
-
+      // Renderiza a etiqueta como imagem
       const canvas = await html2canvas(etiquetaElement, {
         scale: 3,
         allowTaint: true,
@@ -113,19 +105,26 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const imgData = canvas.toDataURL("image/png");
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+      // Calcula largura/altura do canvas em mm
+      const dpi = 96; // padrão web
+      const canvasWidthMM = (canvas.width / dpi) * 25.4;
+      const canvasHeightMM = (canvas.height / dpi) * 25.4;
 
-      const imgWidth = 180;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Cria um PDF com o tamanho igual ao da etiqueta
+      if (i === 0) {
+        doc = new jsPDF({
+          orientation: "p",
+          unit: "mm",
+          format: [canvasWidthMM, canvasHeightMM],
+        });
+      } else {
+        doc.addPage([canvasWidthMM, canvasHeightMM], 'p');
+      }
 
-      const x = (pageWidth - imgWidth) / 2;
-      const y = (pageHeight - imgHeight) / 2;
-
-      doc.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+      doc.addImage(imgData, "PNG", 0, 0, canvasWidthMM, canvasHeightMM);
     }
-    doc.save("etiquetas_produtos_individual.pdf");
 
+    doc.save("etiquetas_produtos_individual.pdf");
     spinner.hidden = true;
     statusText.textContent = "PDF exportado com sucesso!";
     exportarBtn.disabled = false;
