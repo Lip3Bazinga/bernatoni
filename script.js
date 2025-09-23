@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    doc.save("etiquetas_produtos_alta_qualidade.pdf");
+    doc.save("etiquetas_produtos.pdf");
     spinner.hidden = true;
     statusText.textContent = "PDF de alta qualidade exportado com sucesso!";
     exportarBtn.disabled = false;
