@@ -78,9 +78,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   exportarBtn.addEventListener("click", async () => {
-
-    const etiquetasVisiveis = document.querySelectorAll("#output-area .etiqueta-wrapper");
-
+    const etiquetasVisiveis = document.querySelectorAll(
+      "#output-area .etiqueta-wrapper"
+    );
     if (etiquetasVisiveis.length === 0) {
       alert("Nenhuma etiqueta para exportar.");
       return;
@@ -88,39 +88,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     exportarBtn.disabled = true;
     spinner.hidden = false;
-    statusText.textContent = "Gerando PDF (1 por página tamanho da etiqueta)...";
+    statusText.textContent =
+      "Gerando PDF (1 etiqueta por página, do tamanho exato)...";
 
     const { jsPDF } = window.jspdf;
-
     let doc = null;
 
     for (let i = 0; i < etiquetasVisiveis.length; i++) {
       const etiquetaElement = etiquetasVisiveis[i];
 
-      // Renderiza a etiqueta como imagem
-      const canvas = await html2canvas(etiquetaElement, {
+      // Clona para renderizar sem interferência
+      const etiquetaClone = etiquetaElement.cloneNode(true);
+      etiquetaClone.style.margin = "0";
+      etiquetaClone.style.position = "static";
+      etiquetaClone.style.visibility = "visible";
+
+      const tempContainer = document.createElement("div");
+      tempContainer.style.position = "fixed";
+      tempContainer.style.left = "-9999px";
+      tempContainer.appendChild(etiquetaClone);
+      document.body.appendChild(tempContainer);
+
+      const canvas = await html2canvas(etiquetaClone, {
         scale: 3,
         allowTaint: true,
         useCORS: true,
       });
+      document.body.removeChild(tempContainer);
+
       const imgData = canvas.toDataURL("image/png");
 
-      // Calcula largura/altura do canvas em mm
-      const dpi = 96; // padrão web
+      // Conversão px → mm (96dpi padrão web)
+      const dpi = 96;
       const canvasWidthMM = (canvas.width / dpi) * 25.4;
       const canvasHeightMM = (canvas.height / dpi) * 25.4;
 
-      // Cria um PDF com o tamanho igual ao da etiqueta
       if (i === 0) {
+        // Cria PDF com o tamanho exato da etiqueta
         doc = new jsPDF({
-          orientation: "p",
+          orientation: canvasWidthMM > canvasHeightMM ? "l" : "p",
           unit: "mm",
           format: [canvasWidthMM, canvasHeightMM],
         });
       } else {
-        doc.addPage([canvasWidthMM, canvasHeightMM], 'p');
+        doc.addPage(
+          [canvasWidthMM, canvasHeightMM],
+          canvasWidthMM > canvasHeightMM ? "l" : "p"
+        );
       }
 
+      // Adiciona a etiqueta ocupando 100% da página
       doc.addImage(imgData, "PNG", 0, 0, canvasWidthMM, canvasHeightMM);
     }
 
