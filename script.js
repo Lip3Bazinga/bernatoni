@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gerarBtn.disabled = false;
   });
 
-  exportarBtn.addEventListener("click", async () => {
+  exportarBtn.addEventListener("click", () => {
     const etiquetasVisiveis = document.querySelectorAll(
       "#output-area .etiqueta-wrapper"
     );
@@ -88,62 +88,110 @@ document.addEventListener("DOMContentLoaded", () => {
 
     exportarBtn.disabled = true;
     spinner.hidden = false;
-    statusText.textContent =
-      "Gerando PDF (1 etiqueta por página, do tamanho exato)...";
+    statusText.textContent = "Gerando PDF de alta qualidade...";
 
     const { jsPDF } = window.jspdf;
-    let doc = null;
+    const labelWidthMM = 84.6; // Equivalente a 320px a 96dpi
+    const labelHeightMM = 47.6; // Equivalente a 180px a 96dpi
+    const doc = new jsPDF({
+      orientation: "l",
+      unit: "mm",
+      format: [labelWidthMM, labelHeightMM],
+    });
 
-    for (let i = 0; i < etiquetasVisiveis.length; i++) {
-      const etiquetaElement = etiquetasVisiveis[i];
+    const isMasculino = brandToggle.checked;
+    const brandName = isMasculino ? "BERNATONI" : "VIOLANTA";
+    const FONT_FAMILY = "Helvetica"; // Fonte padrão do jsPDF
 
-      // Clona para renderizar sem interferência
-      const etiquetaClone = etiquetaElement.cloneNode(true);
-      etiquetaClone.style.margin = "0";
-      etiquetaClone.style.position = "static";
-      etiquetaClone.style.visibility = "visible";
+    produtosData.forEach((produto, i) => {
+      // Validação de dados essenciais
+      if (
+        !produto["Código do produto"] ||
+        !produto["Opção de estoque"] ||
+        !produto["Número do pedido"]
+      )
+        return;
 
-      const tempContainer = document.createElement("div");
-      tempContainer.style.position = "fixed";
-      tempContainer.style.left = "-9999px";
-      tempContainer.appendChild(etiquetaClone);
-      document.body.appendChild(tempContainer);
-
-      const canvas = await html2canvas(etiquetaClone, {
-        scale: 3,
-        allowTaint: true,
-        useCORS: true,
-      });
-      document.body.removeChild(tempContainer);
-
-      const imgData = canvas.toDataURL("image/png");
-
-      // Conversão px → mm (96dpi padrão web)
-      const dpi = 96;
-      const canvasWidthMM = (canvas.width / dpi) * 25.4;
-      const canvasHeightMM = (canvas.height / dpi) * 25.4;
-
-      if (i === 0) {
-        // Cria PDF com o tamanho exato da etiqueta
-        doc = new jsPDF({
-          orientation: canvasWidthMM > canvasHeightMM ? "l" : "p",
-          unit: "mm",
-          format: [canvasWidthMM, canvasHeightMM],
-        });
-      } else {
-        doc.addPage(
-          [canvasWidthMM, canvasHeightMM],
-          canvasWidthMM > canvasHeightMM ? "l" : "p"
-        );
+      if (i > 0) {
+        doc.addPage([labelWidthMM, labelHeightMM], "l");
       }
 
-      // Adiciona a etiqueta ocupando 100% da página
-      doc.addImage(imgData, "PNG", 0, 0, canvasWidthMM, canvasHeightMM);
-    }
+      const margin = 4; // Equivalente a 15px de padding
 
-    doc.save("etiquetas_produtos_individual.pdf");
+      // --- Cabeçalho (Código do produto) ---
+      const codigoProduto = produto["Código do produto"];
+      doc.setFont(FONT_FAMILY, "bold");
+      doc.setFontSize(19.5); // 26px -> 19.5pt
+      doc.text(String(codigoProduto), margin, margin + 7);
+
+      // --- Caixa de Tamanho (canto inferior direito) ---
+      const boxSize = 21.1; // 80px
+      const boxBorder = 0.8; // 3px
+      const boxX = labelWidthMM - boxSize - margin;
+      const boxY = labelHeightMM - boxSize - margin;
+
+      doc.setLineWidth(boxBorder);
+      doc.rect(boxX, boxY, boxSize, boxSize, "S"); // "S" para apenas contorno
+
+      // --- Texto dentro da Caixa de Tamanho ---
+      const tamanho = produto["Opção de estoque"];
+      doc.setFont(FONT_FAMILY, "bold");
+
+      // Número do tamanho (ex: 44)
+      doc.setFontSize(36); // 48px -> 36pt
+      const tamanhoWidth = doc.getTextWidth(String(tamanho));
+      doc.text(String(tamanho), boxX + (boxSize - tamanhoWidth) / 2, boxY + 14.5);
+
+      // Nome da marca
+      doc.setFontSize(7.5); // 10px -> 7.5pt
+      const brandNameWidth = doc.getTextWidth(brandName);
+      doc.text(brandName, boxX + (boxSize - brandNameWidth) / 2, boxY + 18);
+
+      // --- Bloco de Informações (canto inferior esquerdo) ---
+      let currentY = 22; // Alinhado ao topo da caixa de tamanho
+      doc.setFont(FONT_FAMILY, "normal");
+      doc.setFontSize(10.5); // 14px -> 10.5pt
+
+      doc.text(`MODELO: ${tamanho}`, margin, currentY);
+      currentY += 4.5;
+      doc.text("FICHA: --", margin, currentY);
+      currentY += 4.5;
+      doc.text("PART.: --", margin, currentY);
+
+      // --- Código de Barras ---
+      const numeroPedido = String(produto["Número do pedido"]);
+      const tempCanvas = document.createElement("canvas");
+      try {
+        // Renderiza o código de barras em um canvas temporário com alta resolução
+        JsBarcode(tempCanvas, numeroPedido, {
+          format: "CODE128",
+          displayValue: false,
+          width: 4, // Aumenta a largura das barras para maior definição
+          height: 80, // Aumenta a altura para maior definição
+          margin: 0,
+        });
+        const barcodeImgData = tempCanvas.toDataURL("image/png");
+
+        const barcodeHeightMM = 10;
+        const barcodeWidthMM = 45;
+
+        doc.addImage(
+          barcodeImgData,
+          "PNG",
+          margin,
+          currentY + 2, // Posição abaixo do texto "PART.:"
+          barcodeWidthMM,
+          barcodeHeightMM
+        );
+      } catch (e) {
+        console.error("Erro ao gerar o código de barras:", e);
+        doc.text("Erro no barcode", margin, currentY + 6);
+      }
+    });
+
+    doc.save("etiquetas_produtos_alta_qualidade.pdf");
     spinner.hidden = true;
-    statusText.textContent = "PDF exportado com sucesso!";
+    statusText.textContent = "PDF de alta qualidade exportado com sucesso!";
     exportarBtn.disabled = false;
   });
 
