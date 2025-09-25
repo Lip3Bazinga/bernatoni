@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFile = null;
 
   uploader.addEventListener("click", () => csvFileInput.click());
-
   csvFileInput.setAttribute("accept", ".xlsx");
 
   csvFileInput.addEventListener("change", () => {
@@ -29,12 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     e.stopPropagation();
   }
-  uploader.addEventListener("dragenter", () =>
-    uploader.classList.add("dragover")
-  );
-  uploader.addEventListener("dragleave", () =>
-    uploader.classList.remove("dragover")
-  );
+  uploader.addEventListener("dragenter", () => uploader.classList.add("dragover"));
+  uploader.addEventListener("dragleave", () => uploader.classList.remove("dragover"));
   uploader.addEventListener("drop", e => {
     uploader.classList.remove("dragover");
     handleXlsxFile(e.dataTransfer.files[0]);
@@ -47,9 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        produtosData = XLSX.utils.sheet_to_json(worksheet, {
-          defval: "",
-        });
+        produtosData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
         statusText.textContent = `Arquivo selecionado: ${file.name}`;
         gerarBtn.disabled = false;
         exportarBtn.hidden = true;
@@ -58,8 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       reader.readAsArrayBuffer(file);
     } else {
-      statusText.textContent =
-        "Formato inválido. Por favor, selecione um arquivo .XLSX";
+      statusText.textContent = "Formato inválido. Por favor, selecione um arquivo .XLSX";
       selectedFile = null;
       gerarBtn.disabled = true;
     }
@@ -78,9 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   exportarBtn.addEventListener("click", () => {
-    const etiquetasVisiveis = document.querySelectorAll(
-      "#output-area .etiqueta-wrapper"
-    );
+    const etiquetasVisiveis = document.querySelectorAll("#output-area .etiqueta-wrapper");
     if (etiquetasVisiveis.length === 0) {
       alert("Nenhuma etiqueta para exportar.");
       return;
@@ -93,40 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const { jsPDF } = window.jspdf;
     const labelWidthMM = 84.6; // Equivalente a 320px a 96dpi
     const labelHeightMM = 47.6; // Equivalente a 180px a 96dpi
-    const doc = new jsPDF({
-      orientation: "l",
-      unit: "mm",
-      format: [labelWidthMM, labelHeightMM],
-    });
+    const doc = new jsPDF({ orientation: "l", unit: "mm", format: [labelWidthMM, labelHeightMM] });
 
     const isMasculino = brandToggle.checked;
     const brandName = isMasculino ? "BERNATONI" : "VIOLANTA";
-    const FONT_FAMILY = "Helvetica"; // Fonte padrão do jsPDF
+    const FONT_FAMILY = "Helvetica";
 
     produtosData.forEach((produto, i) => {
       // Validação de dados essenciais
-      if (
-        !produto["Código do produto"] ||
-        !produto["Opção de estoque"] ||
-        !produto["Número do pedido"]
-      )
+      if (!produto["Código do produto"] || !produto["Opção de estoque"])
         return;
 
       if (i > 0) {
         doc.addPage([labelWidthMM, labelHeightMM], "l");
       }
 
-      const margin = 4; // Equivalente a 15px de padding
-
-      // --- Cabeçalho (Código do produto) ---
+      const margin = 4;
       const codigoProduto = produto["Código do produto"];
       doc.setFont(FONT_FAMILY, "bold");
-      doc.setFontSize(19.5); // 26px -> 19.5pt
+      doc.setFontSize(19.5);
       doc.text(String(codigoProduto), margin, margin + 7);
 
       // --- Caixa de Tamanho (canto inferior direito) ---
-      const boxSize = 21.1; // 80px
-      const boxBorder = 0.8; // 3px
+      const boxSize = 21.1;
+      const boxBorder = 0.8;
       const boxX = labelWidthMM - boxSize - margin;
       const boxY = labelHeightMM - boxSize - margin;
 
@@ -136,42 +116,40 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- Texto dentro da Caixa de Tamanho ---
       const tamanho = produto["Opção de estoque"];
       doc.setFont(FONT_FAMILY, "bold");
-
-      // Número do tamanho (ex: 44)
-      doc.setFontSize(36); // 48px -> 36pt
+      doc.setFontSize(36);
       const tamanhoWidth = doc.getTextWidth(String(tamanho));
       doc.text(String(tamanho), boxX + (boxSize - tamanhoWidth) / 2, boxY + 14.5);
 
-      // Nome da marca
-      doc.setFontSize(7.5); // 10px -> 7.5pt
+      doc.setFontSize(7.5);
       const brandNameWidth = doc.getTextWidth(brandName);
       doc.text(brandName, boxX + (boxSize - brandNameWidth) / 2, boxY + 18);
 
       // --- Bloco de Informações (canto inferior esquerdo) ---
-      let currentY = 22; // Alinhado ao topo da caixa de tamanho
+      let currentY = 22;
       doc.setFont(FONT_FAMILY, "normal");
-      doc.setFontSize(10.5); // 14px -> 10.5pt
+      doc.setFontSize(10.5);
 
-      doc.text(`MODELO: ${tamanho}`, margin, currentY);
-      currentY += 4.5;
-      doc.text("FICHA: --", margin, currentY);
-      currentY += 4.5;
+      doc.text(`MODELO: ${tamanho}`, margin, currentY); currentY += 4.5;
+      doc.text("FICHA: --", margin, currentY); currentY += 4.5;
       doc.text("PART.: --", margin, currentY);
 
-      // --- Código de Barras ---
-      const numeroPedido = String(produto["Número do pedido"]);
+      // --- Código de Barras com removeAcentos ---
+      const campo1 = produto["Código do produto"] || "";
+      const campo2 = produto["Descrição"] ? removeAcentos(produto["Descrição"]) : "";
+      const campo3 = produto["Opção de estoque"] || "";
+      const strCodigoBarra = `${campo1} ${campo2} ${campo3}`.trim();
+
       const tempCanvas = document.createElement("canvas");
       try {
-        // Renderiza o código de barras em um canvas temporário com alta resolução
-        JsBarcode(tempCanvas, numeroPedido, {
+        JsBarcode(tempCanvas, strCodigoBarra, {
           format: "CODE128",
           displayValue: false,
-          width: 4, // Aumenta a largura das barras para maior definição
-          height: 80, // Aumenta a altura para maior definição
+          width: 4,
+          height: 80,
           margin: 0,
         });
-        const barcodeImgData = tempCanvas.toDataURL("image/png");
 
+        const barcodeImgData = tempCanvas.toDataURL("image/png");
         const barcodeHeightMM = 10;
         const barcodeWidthMM = 45;
 
@@ -179,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
           barcodeImgData,
           "PNG",
           margin,
-          currentY + 2, // Posição abaixo do texto "PART.:"
+          currentY + 2,
           barcodeWidthMM,
           barcodeHeightMM
         );
@@ -201,33 +179,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function removeAcentos(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+
   function renderizarEtiquetas() {
     outputArea.innerHTML = "";
     const isMasculino = brandToggle.checked;
     const brandName = isMasculino ? "BERNATONI" : "VIOLANTA";
     for (const produto of produtosData) {
-      if (
-        !produto["Código do produto"] ||
-        !produto["Opção de estoque"] ||
-        !produto["Número do pedido"]
-      )
+      if (!produto["Código do produto"] || !produto["Opção de estoque"])
         continue;
       const novaEtiqueta = templateEtiqueta.cloneNode(true);
       novaEtiqueta.id = "";
       novaEtiqueta.style.position = "static";
       novaEtiqueta.style.visibility = "visible";
-      novaEtiqueta.querySelector(".numeracao-nome").textContent =
-        produto["Código do produto"];
-      novaEtiqueta.querySelector(".modelo-value").textContent =
-        produto["Opção de estoque"];
-      novaEtiqueta.querySelector(".tamanho-value").textContent =
-        produto["Opção de estoque"];
+      novaEtiqueta.querySelector(".numeracao-nome").textContent = produto["Código do produto"];
+      novaEtiqueta.querySelector(".modelo-value").textContent = produto["Opção de estoque"];
+      novaEtiqueta.querySelector(".tamanho-value").textContent = produto["Opção de estoque"];
       novaEtiqueta.querySelector(".brand-name").textContent = brandName;
+
       outputArea.appendChild(novaEtiqueta);
+
+      // Monta a string para o barcode igual exportação
+      const campo1 = produto["Código do produto"] || "";
+      const campo2 = produto["Descrição"] ? removeAcentos(produto["Descrição"]) : "";
+      const campo3 = produto["Opção de estoque"] || "";
+      const strCodigoBarra = `${campo1} ${campo2} ${campo3}`.trim();
+
       try {
         JsBarcode(
           novaEtiqueta.querySelector(".barcode-svg"),
-          String(produto["Número do pedido"]),
+          strCodigoBarra,
           {
             format: "CODE128",
             displayValue: false,
